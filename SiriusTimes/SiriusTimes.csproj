@@ -51,6 +51,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CalendarCell.cs" />
+    <Compile Include="CalendarColumn.cs" />
+    <Compile Include="CalendarEditingControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NullableDatePicker.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="SiriusTimesForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -61,6 +69,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaskDate.cs" />
     <Compile Include="TaskTime.cs" />
+    <Compile Include="TimeCell.cs" />
+    <Compile Include="TimeColumn.cs" />
     <Compile Include="TimesheetRecord.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

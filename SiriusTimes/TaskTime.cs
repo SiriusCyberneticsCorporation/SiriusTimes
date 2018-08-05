@@ -23,9 +23,38 @@ namespace SiriusTimes
 			Minute = time.Minute;
 		}
 
+		public TaskTime(string timeString)
+		{
+			FromString(timeString);
+		}
+
+		public TaskTime(object value)
+		{
+			FromString(value.ToString());
+		}
+
+		// DateTime -> TaskTime
 		public static implicit operator TaskTime(DateTime value)
 		{
 			return new TaskTime(value);
+		}
+
+		// TaskTime -> DateTime
+		public static explicit operator DateTime(TaskTime value)
+		{
+			return value.ToDateTime;
+		}
+
+		// string -> TaskTime
+		public static implicit operator TaskTime(string value)
+		{
+			return new TaskTime(value);
+		}
+
+		// TaskTime -> string
+		public static explicit operator String(TaskTime value)
+		{
+			return value.ToString();
 		}
 
 		public int CompareTo(TaskTime that)
@@ -59,9 +88,12 @@ namespace SiriusTimes
 			return String.Format("{0:00}:{1:00}", Hour, Minute);
 		}
 				
-		public DateTime ToDateTime()
+		public DateTime ToDateTime
 		{
-			return new DateTime(1900, 1, 1, Hour, Minute, 0);
+			get
+			{
+				return new DateTime(1970, 1, 1, Hour, Minute, 0);
+			}
 		}
 	}
 }

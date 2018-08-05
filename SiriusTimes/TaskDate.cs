@@ -25,10 +25,40 @@ namespace SiriusTimes
 			Day = date.Day;
 		}
 
+		public TaskDate(string dateString)
+		{
+			FromString(dateString);
+		}
+
+		public TaskDate(object value)
+		{
+			FromString(value.ToString());
+		}
+
+		// DateTime -> TaskDate
 		public static implicit operator TaskDate(DateTime value)
 		{
 			return new TaskDate(value);
 		}
+
+		// TaskDate -> DateTime
+		public static explicit operator DateTime(TaskDate value)
+		{
+			return value.ToDateTime;
+		}
+
+		// string -> TaskDate
+		public static implicit operator TaskDate(string value)
+		{
+			return new TaskDate(value);
+		}
+
+		// TaskDate -> string
+		public static explicit operator String(TaskDate value)
+		{
+			return value.ToString();
+		}
+
 
 		public int CompareTo(TaskDate that)
 		{

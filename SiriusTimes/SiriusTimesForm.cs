@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -52,9 +53,19 @@ namespace SiriusTimes
 
 		private void SiriusTimesForm_Load(object sender, EventArgs e)
 		{
+			File.Copy(TIMESHEET_DATABASE, DateTime.Now.ToString("yyyy-MM-dd") + " " + TIMESHEET_DATABASE, true);
+
+			var monthList = System.Globalization.DateTimeFormatInfo.InvariantInfo.MonthNames.Select((item, index) => new
+			{
+				Month = item,
+				Value = index + 1
+			});
+			CSVMonthComboBox.DataSource = monthList.ToList();
+			CSVMonthComboBox.DisplayMember = "Month";
+			CSVMonthComboBox.ValueMember = "Value";
+
 			m_timesheetDatabase = new LiteDatabase(TIMESHEET_DATABASE);
 			m_timesheets = m_timesheetDatabase.GetCollection<TimesheetRecord>();
-
 			//m_timesheets.EnsureIndex(t => t.FolderName);
 		}
 
@@ -78,6 +89,9 @@ namespace SiriusTimes
 			{
 				EndTimeDateTimePicker.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, minuteRoundedUp, 0);
 			}
+
+			CSVMonthComboBox.SelectedValue = DateTime.Now.Month;
+			CSVLocationTextBox.Text = Properties.Settings.Default.CVSLocation;
 
 			RefreshTimesheetDataGridView();
 		}
@@ -151,19 +165,29 @@ namespace SiriusTimes
 
 		private void RefreshTimesheetDataGridView()
 		{
-			List<TimesheetRecord> allRecords = m_timesheets.FindAll().OrderByDescending(t => t.TaskDate).ThenByDescending(t => t.StartTime).ToList();
-			TimesheetDataGridView.DataSource = allRecords;
-			TimesheetDataGridView.ClearSelection();
+			int month = DateTime.Today.Month;
 
-			List<SummaryLine> summaryRecords = m_timesheets.FindAll().GroupBy(t => new { t.Client, t.TaskDate.ToDateTime })
-				.Select(ts => new SummaryLine
-				{
-					Client = ts.First().Client,
-					TaskDate = ts.First().TaskDate,
-					Hours = ts.Sum(t => (t.EndTime.ToDateTime()-t.StartTime.ToDateTime()).TotalHours)
-				}).OrderBy(sl => sl.TaskDate).ToList();
-			SummaryDataGridView.DataSource = summaryRecords;
-			SummaryDataGridView.ClearSelection();
+			if (CSVMonthComboBox.SelectedValue is int)
+			{
+				month = (int)(CSVMonthComboBox.SelectedValue);
+			}
+
+			if (m_timesheets != null)
+			{
+				List<TimesheetRecord> allRecords = m_timesheets.FindAll().OrderByDescending(t => t.TaskDate).ThenByDescending(t => t.StartTime).ToList();
+				TimesheetDataGridView.DataSource = allRecords;
+				TimesheetDataGridView.ClearSelection();
+
+				List<SummaryLine> summaryRecords = m_timesheets.Find(ts => ts.TaskDate.Month == month).GroupBy(t => new { t.Client, t.TaskDate.ToDateTime })
+					.Select(ts => new SummaryLine
+					{
+						Client = ts.First().Client,
+						TaskDate = ts.First().TaskDate,
+						Hours = ts.Sum(t => (t.EndTime.ToDateTime - t.StartTime.ToDateTime).TotalHours)
+					}).OrderBy(sl => sl.TaskDate).ToList();
+				SummaryDataGridView.DataSource = summaryRecords;
+				SummaryDataGridView.ClearSelection();
+			}
 		}
 
 		private void UpdateTimer_Tick(object sender, EventArgs e)
@@ -210,6 +234,56 @@ namespace SiriusTimes
 					break;
 			}
 			m_timesheets.Update(iTimesheetRecord);
+		}
+
+		private void CSVLocationTextBox_MouseDoubleClick(object sender, MouseEventArgs e)
+		{
+			FolderBrowserDialog iFolderBrowserDialog = new FolderBrowserDialog()
+			{
+				Description = "CSV Location",
+				RootFolder = Environment.SpecialFolder.MyComputer,
+				SelectedPath = Properties.Settings.Default.CVSLocation
+			};
+
+			if(iFolderBrowserDialog.ShowDialog() == DialogResult.OK)
+			{
+				Properties.Settings.Default.CVSLocation = iFolderBrowserDialog.SelectedPath;
+				Properties.Settings.Default.Save();
+			}
+		}
+
+		private void CSVForClientButton_Click(object sender, EventArgs e)
+		{
+			int month = (int)(CSVMonthComboBox.SelectedValue);
+			IEnumerable<TimesheetRecord> monthsRecords = m_timesheets.Find(ts => ts.TaskDate.Month == month && 
+																				 ts.Client == ClientComboBox.Text).OrderBy(ts => ts.TaskDate);
+			StringBuilder records = new StringBuilder();
+
+			records.AppendLine("Date,Task,Start,End,Hours");
+
+			foreach (TimesheetRecord record in monthsRecords)
+			{
+				string line = record.TaskDate.ToString() + "," +
+							  record.Project + "," +
+							  record.TaskTitle + "," +
+							  record.StartTime.ToString() + "," +
+							  record.EndTime.ToString() + "," +
+							  (record.EndTime.ToDateTime - record.StartTime.ToDateTime).TotalHours.ToString("N2");
+				records.AppendLine(line);
+			}
+
+			File.WriteAllText(Path.Combine(CSVLocationTextBox.Text, ClientComboBox.Text + " " + CSVMonthComboBox.Text + " Timesheet.csv"),
+								records.ToString());
+		}
+
+		private void TimesheetDataGridView_DataError(object sender, DataGridViewDataErrorEventArgs e)
+		{
+
+		}
+
+		private void CSVMonthComboBox_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			RefreshTimesheetDataGridView();
 		}
 	}
 }

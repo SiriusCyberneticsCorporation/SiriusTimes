@@ -46,5 +46,17 @@ namespace SiriusTimes.Properties {
                 this["WindowState"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Data\\Timesheets")]
+        public string CVSLocation {
+            get {
+                return ((string)(this["CVSLocation"]));
+            }
+            set {
+                this["CVSLocation"] = value;
+            }
+        }
     }
 }
