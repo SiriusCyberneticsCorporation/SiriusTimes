@@ -29,9 +29,6 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -39,6 +36,9 @@
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SiriusTimesForm));
 			this.TaskDateDateTimePicker = new System.Windows.Forms.DateTimePicker();
 			this.label1 = new System.Windows.Forms.Label();
@@ -50,13 +50,6 @@
 			this.label4 = new System.Windows.Forms.Label();
 			this.TaskAddButton = new System.Windows.Forms.Button();
 			this.TimesheetDataGridView = new System.Windows.Forms.DataGridView();
-			this.IDColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.ClientColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.ProjectColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.DateColumn = new SiriusTimes.CalendarColumn();
-			this.TaskColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.StartTimeColumn = new SiriusTimes.TimeColumn();
-			this.EndTimeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.label5 = new System.Windows.Forms.Label();
 			this.ClientComboBox = new System.Windows.Forms.ComboBox();
 			this.label6 = new System.Windows.Forms.Label();
@@ -81,6 +74,13 @@
 			this.CSVLocationTextBox = new System.Windows.Forms.TextBox();
 			this.label7 = new System.Windows.Forms.Label();
 			this.CSVMonthComboBox = new System.Windows.Forms.ComboBox();
+			this.IDColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.ClientColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.ProjectColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.DateColumn = new SiriusTimes.CalendarColumn();
+			this.TaskColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.StartTimeColumn = new SiriusTimes.TimeColumn();
+			this.EndTimeColumn = new SiriusTimes.TimeColumn();
 			((System.ComponentModel.ISupportInitialize)(this.TimesheetDataGridView)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.SummaryDataGridView)).BeginInit();
 			this.groupBox1.SuspendLayout();
@@ -205,66 +205,6 @@
 			this.TimesheetDataGridView.TabIndex = 9;
 			this.TimesheetDataGridView.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.TimesheetDataGridView_CellEndEdit);
 			this.TimesheetDataGridView.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.TimesheetDataGridView_DataError);
-			// 
-			// IDColumn
-			// 
-			this.IDColumn.DataPropertyName = "ID";
-			this.IDColumn.HeaderText = "ID";
-			this.IDColumn.Name = "IDColumn";
-			this.IDColumn.Visible = false;
-			// 
-			// ClientColumn
-			// 
-			this.ClientColumn.DataPropertyName = "Client";
-			this.ClientColumn.HeaderText = "Client";
-			this.ClientColumn.Name = "ClientColumn";
-			// 
-			// ProjectColumn
-			// 
-			this.ProjectColumn.DataPropertyName = "Project";
-			this.ProjectColumn.HeaderText = "Project";
-			this.ProjectColumn.Name = "ProjectColumn";
-			// 
-			// DateColumn
-			// 
-			this.DateColumn.DataPropertyName = "TaskDate";
-			dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			dataGridViewCellStyle1.Format = "dd-MM-yyyy";
-			this.DateColumn.DefaultCellStyle = dataGridViewCellStyle1;
-			this.DateColumn.HeaderText = "Date";
-			this.DateColumn.Name = "DateColumn";
-			this.DateColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-			this.DateColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-			this.DateColumn.Width = 80;
-			// 
-			// TaskColumn
-			// 
-			this.TaskColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-			this.TaskColumn.DataPropertyName = "TaskTitle";
-			this.TaskColumn.HeaderText = "Task";
-			this.TaskColumn.Name = "TaskColumn";
-			// 
-			// StartTimeColumn
-			// 
-			this.StartTimeColumn.DataPropertyName = "StartTime";
-			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			dataGridViewCellStyle2.Format = "HH:mm";
-			this.StartTimeColumn.DefaultCellStyle = dataGridViewCellStyle2;
-			this.StartTimeColumn.HeaderText = "Start";
-			this.StartTimeColumn.Name = "StartTimeColumn";
-			this.StartTimeColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-			this.StartTimeColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-			this.StartTimeColumn.Width = 50;
-			// 
-			// EndTimeColumn
-			// 
-			this.EndTimeColumn.DataPropertyName = "EndTime";
-			dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			dataGridViewCellStyle3.Format = "HH:mm";
-			this.EndTimeColumn.DefaultCellStyle = dataGridViewCellStyle3;
-			this.EndTimeColumn.HeaderText = "End";
-			this.EndTimeColumn.Name = "EndTimeColumn";
-			this.EndTimeColumn.Width = 50;
 			// 
 			// label5
 			// 
@@ -494,6 +434,68 @@
 			this.CSVMonthComboBox.TabIndex = 17;
 			this.CSVMonthComboBox.SelectedIndexChanged += new System.EventHandler(this.CSVMonthComboBox_SelectedIndexChanged);
 			// 
+			// IDColumn
+			// 
+			this.IDColumn.DataPropertyName = "ID";
+			this.IDColumn.HeaderText = "ID";
+			this.IDColumn.Name = "IDColumn";
+			this.IDColumn.Visible = false;
+			// 
+			// ClientColumn
+			// 
+			this.ClientColumn.DataPropertyName = "Client";
+			this.ClientColumn.HeaderText = "Client";
+			this.ClientColumn.Name = "ClientColumn";
+			// 
+			// ProjectColumn
+			// 
+			this.ProjectColumn.DataPropertyName = "Project";
+			this.ProjectColumn.HeaderText = "Project";
+			this.ProjectColumn.Name = "ProjectColumn";
+			// 
+			// DateColumn
+			// 
+			this.DateColumn.DataPropertyName = "TaskDate";
+			dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			dataGridViewCellStyle1.Format = "dd-MM-yyyy";
+			this.DateColumn.DefaultCellStyle = dataGridViewCellStyle1;
+			this.DateColumn.HeaderText = "Date";
+			this.DateColumn.Name = "DateColumn";
+			this.DateColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+			this.DateColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+			this.DateColumn.Width = 80;
+			// 
+			// TaskColumn
+			// 
+			this.TaskColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+			this.TaskColumn.DataPropertyName = "TaskTitle";
+			this.TaskColumn.HeaderText = "Task";
+			this.TaskColumn.Name = "TaskColumn";
+			// 
+			// StartTimeColumn
+			// 
+			this.StartTimeColumn.DataPropertyName = "StartTime";
+			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			dataGridViewCellStyle2.Format = "HH:mm";
+			this.StartTimeColumn.DefaultCellStyle = dataGridViewCellStyle2;
+			this.StartTimeColumn.HeaderText = "Start";
+			this.StartTimeColumn.Name = "StartTimeColumn";
+			this.StartTimeColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+			this.StartTimeColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+			this.StartTimeColumn.Width = 50;
+			// 
+			// EndTimeColumn
+			// 
+			this.EndTimeColumn.DataPropertyName = "EndTime";
+			dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			dataGridViewCellStyle3.Format = "HH:mm";
+			this.EndTimeColumn.DefaultCellStyle = dataGridViewCellStyle3;
+			this.EndTimeColumn.HeaderText = "End";
+			this.EndTimeColumn.Name = "EndTimeColumn";
+			this.EndTimeColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+			this.EndTimeColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+			this.EndTimeColumn.Width = 50;
+			// 
 			// SiriusTimesForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -574,7 +576,7 @@
 		private CalendarColumn DateColumn;
 		private System.Windows.Forms.DataGridViewTextBoxColumn TaskColumn;
 		private TimeColumn StartTimeColumn;
-		private System.Windows.Forms.DataGridViewTextBoxColumn EndTimeColumn;
+		private TimeColumn EndTimeColumn;
 	}
 }
 
