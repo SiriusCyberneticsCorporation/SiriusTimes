@@ -60,9 +60,12 @@ namespace SiriusTimes
 				Month = item,
 				Value = index + 1
 			});
-			CSVMonthComboBox.DataSource = monthList.ToList();
-			CSVMonthComboBox.DisplayMember = "Month";
-			CSVMonthComboBox.ValueMember = "Value";
+
+			MonthComboBox.DataSource = monthList.ToList();
+			MonthComboBox.DisplayMember = "Month";
+			MonthComboBox.ValueMember = "Value";
+
+			YearComboBox.DataSource = new List<int>() { 2018, 2019, 2020, 2021, 2022, 2023, 2024 };
 
 			m_timesheetDatabase = new LiteDatabase(TIMESHEET_DATABASE);
 			m_timesheets = m_timesheetDatabase.GetCollection<TimesheetRecord>();
@@ -75,6 +78,10 @@ namespace SiriusTimes
 			List<string> clients = allRecords.Select(t => t.Client).Distinct().ToList();
 
 			ClientComboBox.DataSource = clients;
+			if(Properties.Settings.Default.LastClient.Length > 0)
+			{
+				ClientComboBox.SelectedItem = Properties.Settings.Default.LastClient;
+			}
 
 			int minuteRoundedDown = (int)(Math.Floor(DateTime.Now.Minute / 5D) * 5);
 			int minuteRoundedUp = (int)(Math.Ceiling(DateTime.Now.Minute / 5D) * 5);
@@ -90,7 +97,8 @@ namespace SiriusTimes
 				EndTimeDateTimePicker.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, minuteRoundedUp, 0);
 			}
 
-			CSVMonthComboBox.SelectedValue = DateTime.Now.Month;
+			MonthComboBox.SelectedValue = DateTime.Now.Month;
+			YearComboBox.SelectedItem = DateTime.Now.Year;
 			CSVLocationTextBox.Text = Properties.Settings.Default.CVSLocation;
 
 			RefreshTimesheetDataGridView();
@@ -133,6 +141,7 @@ namespace SiriusTimes
 			TimesheetRecord iTimesheetRecord = new TimesheetRecord()
 			{
 				Client = ClientComboBox.Text,
+				PO = POComboBox.Text,
 				Project = ProjectComboBox.Text,
 				TaskDate = TaskDateDateTimePicker.Value,
 				TaskTitle = TaskTitleTextBox.Text,
@@ -140,6 +149,11 @@ namespace SiriusTimes
 				EndTime = EndTimeDateTimePicker.Value
 			};
 			m_timesheets.Insert(iTimesheetRecord);
+
+			Properties.Settings.Default.LastClient = ClientComboBox.Text;
+			Properties.Settings.Default.LastProject = ProjectComboBox.Text;
+			Properties.Settings.Default.LastPO = POComboBox.Text;
+			Properties.Settings.Default.Save();
 
 			StartTimeDateTimePicker.Value = EndTimeDateTimePicker.Value;
 
@@ -149,9 +163,22 @@ namespace SiriusTimes
 		private void ClientComboBox_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			List<TimesheetRecord> clientRecords = m_timesheets.Find(t => t.Client == ClientComboBox.Text).ToList();
+			List<string> pos = clientRecords.Select(t => t.PO).Distinct().ToList();
 			List<string> projects = clientRecords.Select(t => t.Project).Distinct().ToList();
 
+			POComboBox.DataSource = pos;
+
+			if (Properties.Settings.Default.LastPO.Length > 0)
+			{
+				POComboBox.SelectedItem = Properties.Settings.Default.LastPO;
+			}
+
 			ProjectComboBox.DataSource = projects;
+
+			if (Properties.Settings.Default.LastProject.Length > 0)
+			{
+				ProjectComboBox.SelectedItem = Properties.Settings.Default.LastProject;
+			}
 		}
 
 		public class SummaryLine
@@ -166,10 +193,16 @@ namespace SiriusTimes
 		private void RefreshTimesheetDataGridView()
 		{
 			int month = DateTime.Today.Month;
+			int year = DateTime.Today.Year;
 
-			if (CSVMonthComboBox.SelectedValue is int)
+			if (MonthComboBox.SelectedValue is int)
 			{
-				month = (int)(CSVMonthComboBox.SelectedValue);
+				month = (int)(MonthComboBox.SelectedValue);
+			}
+
+			if (YearComboBox.SelectedValue is int)
+			{
+				year = (int)(YearComboBox.SelectedValue);
 			}
 
 			if (m_timesheets != null)
@@ -178,7 +211,8 @@ namespace SiriusTimes
 				TimesheetDataGridView.DataSource = allRecords;
 				TimesheetDataGridView.ClearSelection();
 
-				List<SummaryLine> summaryRecords = m_timesheets.Find(ts => ts.TaskDate.Month == month).GroupBy(t => new { t.Client, t.TaskDate.ToDateTime })
+				List<SummaryLine> summaryRecords = m_timesheets.Find(ts => ts.TaskDate.Month == month && ts.TaskDate.Year == year)
+					.GroupBy(t => new { t.Client, t.TaskDate.ToDateTime })
 					.Select(ts => new SummaryLine
 					{
 						Client = ts.First().Client,
@@ -217,6 +251,9 @@ namespace SiriusTimes
 				case "ClientColumn":
 					iTimesheetRecord.Client = TimesheetDataGridView.Rows[e.RowIndex].Cells["ClientColumn"].Value.ToString();
 					break;
+				case "POColumn":
+					iTimesheetRecord.PO = TimesheetDataGridView.Rows[e.RowIndex].Cells["POColumn"].Value.ToString();
+					break;
 				case "ProjectColumn":
 					iTimesheetRecord.Project = TimesheetDataGridView.Rows[e.RowIndex].Cells["ProjectColumn"].Value.ToString();
 					break;
@@ -252,28 +289,160 @@ namespace SiriusTimes
 			}
 		}
 
+		private IEnumerable<TimesheetRecord> SelectRecords()
+		{
+			int month = (int)(MonthComboBox.SelectedValue);
+			int year = (int)(YearComboBox.SelectedValue);
+			IEnumerable<TimesheetRecord> records = null;
+
+			if (month == 13)
+			{
+				if (CalendarYearRadioButton.Checked)
+				{
+					records = m_timesheets.Find(ts => ts.TaskDate.Year == year && ts.Client == ClientComboBox.Text).OrderBy(ts => ts.TaskDate);
+				}
+				else
+				{
+					records = m_timesheets.Find(ts => ts.Client == ClientComboBox.Text &&
+															(ts.TaskDate.Month < 7 && ts.TaskDate.Year == year ||
+															 ts.TaskDate.Month > 6 && ts.TaskDate.Year == year - 1)).OrderBy(ts => ts.TaskDate);
+				}
+			}
+			else
+			{
+				if (CalendarYearRadioButton.Checked)
+				{
+					records = m_timesheets.Find(ts => ts.TaskDate.Month == month && ts.TaskDate.Year == year &&
+															ts.Client == ClientComboBox.Text).OrderBy(ts => ts.TaskDate);
+				}
+				else
+				{
+					records = m_timesheets.Find(ts => ts.TaskDate.Month == month && ts.TaskDate.Year == year &&
+															ts.Client == ClientComboBox.Text).OrderBy(ts => ts.TaskDate);
+				}
+			}
+
+			return records;
+		}
+
 		private void CSVForClientButton_Click(object sender, EventArgs e)
 		{
-			int month = (int)(CSVMonthComboBox.SelectedValue);
-			IEnumerable<TimesheetRecord> monthsRecords = m_timesheets.Find(ts => ts.TaskDate.Month == month && 
-																				 ts.Client == ClientComboBox.Text).OrderBy(ts => ts.TaskDate);
-			StringBuilder records = new StringBuilder();
+			IEnumerable<TimesheetRecord> timesheetRecords = SelectRecords();
+			StringBuilder csvRecords = new StringBuilder();
 
-			records.AppendLine("Date,Task,Start,End,Hours");
+			csvRecords.AppendLine("Date,PO,Project,Task,Start,End,Hours");
 
-			foreach (TimesheetRecord record in monthsRecords)
+			foreach (TimesheetRecord record in timesheetRecords)
 			{
 				string line = record.TaskDate.ToString() + "," +
+							  record.PO + "," +
 							  record.Project + "," +
 							  record.TaskTitle + "," +
 							  record.StartTime.ToString() + "," +
 							  record.EndTime.ToString() + "," +
 							  (record.EndTime.ToDateTime - record.StartTime.ToDateTime).TotalHours.ToString("N2");
-				records.AppendLine(line);
+				csvRecords.AppendLine(line);
 			}
 
-			File.WriteAllText(Path.Combine(CSVLocationTextBox.Text, ClientComboBox.Text + " " + CSVMonthComboBox.Text + " Timesheet.csv"),
-								records.ToString());
+			if (MonthComboBox.Text.Length > 1)
+			{
+				File.WriteAllText(Path.Combine(CSVLocationTextBox.Text, ClientComboBox.Text + " " + MonthComboBox.Text + " " + YearComboBox.Text + " Timesheet.csv"),
+									csvRecords.ToString());
+			}
+			else
+			{
+				File.WriteAllText(Path.Combine(CSVLocationTextBox.Text, ClientComboBox.Text + " " + YearComboBox.Text + " Timesheet.csv"),
+									csvRecords.ToString());
+			}
+		}
+
+		private void XLSForClientButton_Click(object sender, EventArgs e)
+		{
+			string filename = string.Empty;
+			IEnumerable<TimesheetRecord> timesheetRecords = SelectRecords();
+
+			if (MonthComboBox.Text.Length > 1)
+			{
+				filename = Path.Combine(CSVLocationTextBox.Text, ClientComboBox.Text + " " + MonthComboBox.Text + " " + YearComboBox.Text + " Timesheet.xlsx");
+			}
+			else
+			{
+				filename = Path.Combine(CSVLocationTextBox.Text, ClientComboBox.Text + " " + YearComboBox.Text + " Timesheet.xlsx");
+			}
+
+			List<float> columnWidths = new List<float>() { 11, 10, 30, 40, 10, 10, 10 };
+			ExcelExporter iExcelExporter = new ExcelExporter(filename, "Timesheet", "Timesheet", "", DateTime.Now.ToLongDateString(), true, columnWidths);
+
+			iExcelExporter.AddRow();
+			iExcelExporter.AddText("Date", 1, true, false, false, HorizontalAlignment.Center);
+			iExcelExporter.AddText("PO", 1, true, false, false, HorizontalAlignment.Center);
+			iExcelExporter.AddText("Project", 1, true, false, false, HorizontalAlignment.Center);
+			iExcelExporter.AddText("Task", 1, true, false, false, HorizontalAlignment.Center);
+			iExcelExporter.AddText("Start", 1, true, false, false, HorizontalAlignment.Center);
+			iExcelExporter.AddText("End", 1, true, false, false, HorizontalAlignment.Center);
+			iExcelExporter.AddText("Hours", 1, true, false, false, HorizontalAlignment.Center);
+
+			foreach (TimesheetRecord record in timesheetRecords)
+			{
+				iExcelExporter.AddRow();
+				iExcelExporter.AddDate(record.TaskDate.ToDateTime, 1, false, false, false, HorizontalAlignment.Right);
+				iExcelExporter.AddText(record.PO, 1, false, false, false, HorizontalAlignment.Left);
+				iExcelExporter.AddText(record.Project, 1, false, false, false, HorizontalAlignment.Left);
+				iExcelExporter.AddText(record.TaskTitle, 1, false, false, false, HorizontalAlignment.Left);
+				iExcelExporter.AddText(record.StartTime.ToString(), 1, false, false, false, HorizontalAlignment.Right);
+				iExcelExporter.AddText(record.EndTime.ToString(), 1, false, false, false, HorizontalAlignment.Right);
+				iExcelExporter.AddDecimal((record.EndTime.ToDateTime - record.StartTime.ToDateTime).TotalHours, 1, false, false, false, HorizontalAlignment.Right);
+			}
+
+			iExcelExporter.Finish();
+		}
+
+		private void XLSbyPOButton_Click(object sender, EventArgs e)
+		{
+			string filename = string.Empty;
+			IEnumerable<TimesheetRecord> allTimesheetRecords = SelectRecords();
+
+			List<string> pos = allTimesheetRecords.Select(t => t.PO).Distinct().ToList();
+
+			foreach (string po in pos)
+			{
+				IEnumerable<TimesheetRecord> timesheetRecords = allTimesheetRecords.Where(t => t.PO == po);
+
+				if (MonthComboBox.Text.Length > 1)
+				{
+					filename = Path.Combine(CSVLocationTextBox.Text, ClientComboBox.Text + " PO"+ po + " " + MonthComboBox.Text + " " + YearComboBox.Text + " Timesheet.xlsx");
+				}
+				else
+				{
+					filename = Path.Combine(CSVLocationTextBox.Text, ClientComboBox.Text + " PO" + po + " " + YearComboBox.Text + " Timesheet.xlsx");
+				}
+
+				List<float> columnWidths = new List<float>() { 11, 10, 30, 40, 10, 10, 10 };
+				ExcelExporter iExcelExporter = new ExcelExporter(filename, "Timesheet", "Timesheet", "", DateTime.Now.ToLongDateString(), true, columnWidths);
+
+				iExcelExporter.AddRow();
+				iExcelExporter.AddText("Date", 1, true, false, false, HorizontalAlignment.Center);
+				iExcelExporter.AddText("PO", 1, true, false, false, HorizontalAlignment.Center);
+				iExcelExporter.AddText("Project", 1, true, false, false, HorizontalAlignment.Center);
+				iExcelExporter.AddText("Task", 1, true, false, false, HorizontalAlignment.Center);
+				iExcelExporter.AddText("Start", 1, true, false, false, HorizontalAlignment.Center);
+				iExcelExporter.AddText("End", 1, true, false, false, HorizontalAlignment.Center);
+				iExcelExporter.AddText("Hours", 1, true, false, false, HorizontalAlignment.Center);
+
+				foreach (TimesheetRecord record in timesheetRecords)
+				{
+					iExcelExporter.AddRow();
+					iExcelExporter.AddDate(record.TaskDate.ToDateTime, 1, false, false, false, HorizontalAlignment.Right);
+					iExcelExporter.AddText(record.PO, 1, false, false, false, HorizontalAlignment.Left);
+					iExcelExporter.AddText(record.Project, 1, false, false, false, HorizontalAlignment.Left);
+					iExcelExporter.AddText(record.TaskTitle, 1, false, false, false, HorizontalAlignment.Left);
+					iExcelExporter.AddText(record.StartTime.ToString(), 1, false, false, false, HorizontalAlignment.Right);
+					iExcelExporter.AddText(record.EndTime.ToString(), 1, false, false, false, HorizontalAlignment.Right);
+					iExcelExporter.AddDecimal((record.EndTime.ToDateTime - record.StartTime.ToDateTime).TotalHours, 1, false, false, false, HorizontalAlignment.Right);
+				}
+
+				iExcelExporter.Finish();
+			}
 		}
 
 		private void TimesheetDataGridView_DataError(object sender, DataGridViewDataErrorEventArgs e)
@@ -285,5 +454,10 @@ namespace SiriusTimes
 		{
 			RefreshTimesheetDataGridView();
 		}
-	}
+
+		private void YearComboBox_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			RefreshTimesheetDataGridView();
+		}
+    }
 }

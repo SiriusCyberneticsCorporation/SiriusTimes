@@ -10,6 +10,7 @@ namespace SiriusTimes
 	{
 		public int ID { get; set; }
 		public string Client { get; set; }
+		public string PO { get; set; }
 		public string Project { get; set; }
 		public TaskDate TaskDate { get; set; }
 		public string TaskTitle { get; set; }

@@ -11,5 +11,14 @@
     <Setting Name="CVSLocation" Type="System.String" Scope="User">
       <Value Profile="(Default)">D:\Data\Timesheets</Value>
     </Setting>
+    <Setting Name="LastClient" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="LastProject" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="LastPO" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>
