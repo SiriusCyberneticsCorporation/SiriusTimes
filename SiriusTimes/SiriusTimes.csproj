@@ -64,6 +64,7 @@
     <Compile Include="NullableDatePicker.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="SerializableDictionary.cs" />
     <Compile Include="SiriusTimesForm.cs">
       <SubType>Form</SubType>
     </Compile>

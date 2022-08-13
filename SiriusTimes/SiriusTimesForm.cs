@@ -15,9 +15,11 @@ namespace SiriusTimes
 	public partial class SiriusTimesForm : Form
 	{
 		private const string TIMESHEET_DATABASE = "SiriusTimes.db";
+		private const string RECENT_SELECTIONS = "RecentSelections.xml";
 
 		private LiteDatabase m_timesheetDatabase = null;
 		private LiteCollection<TimesheetRecord> m_timesheets = null;
+		private SerializableDictionary<string, TimesheetRecord>  RecentSelections = new SerializableDictionary<string, TimesheetRecord>();
 
 		public SiriusTimesForm()
 		{
@@ -49,6 +51,8 @@ namespace SiriusTimes
 					this.Size = Properties.Settings.Default.WindowPosition.Size;
 				}
 			}
+
+			RecentSelections.Deserialize(RECENT_SELECTIONS);
 		}
 
 		private void SiriusTimesForm_Load(object sender, EventArgs e)
@@ -150,6 +154,18 @@ namespace SiriusTimes
 			};
 			m_timesheets.Insert(iTimesheetRecord);
 
+			if(RecentSelections != null)
+			{
+				if(RecentSelections.ContainsKey(ClientComboBox.Text))
+				{
+					RecentSelections[ClientComboBox.Text] = iTimesheetRecord;
+				}
+				else
+				{
+					RecentSelections.Add(ClientComboBox.Text, iTimesheetRecord);
+				}
+				RecentSelections.Serialize(RECENT_SELECTIONS);
+			}
 			Properties.Settings.Default.LastClient = ClientComboBox.Text;
 			Properties.Settings.Default.LastProject = ProjectComboBox.Text;
 			Properties.Settings.Default.LastPO = POComboBox.Text;
@@ -163,21 +179,31 @@ namespace SiriusTimes
 		private void ClientComboBox_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			List<TimesheetRecord> clientRecords = m_timesheets.Find(t => t.Client == ClientComboBox.Text).ToList();
-			List<string> pos = clientRecords.Select(t => t.PO).Distinct().ToList();
+			List<string> pos = clientRecords.Where(t => t.PO != null).Select(t => t.PO).Distinct().ToList();
 			List<string> projects = clientRecords.Select(t => t.Project).Distinct().ToList();
 
+			List<string> pos1 = clientRecords.Select(t => t.PO).ToList();
+
 			POComboBox.DataSource = pos;
-
-			if (Properties.Settings.Default.LastPO.Length > 0)
-			{
-				POComboBox.SelectedItem = Properties.Settings.Default.LastPO;
-			}
-
 			ProjectComboBox.DataSource = projects;
 
-			if (Properties.Settings.Default.LastProject.Length > 0)
+			if (RecentSelections != null &&
+				RecentSelections.ContainsKey(ClientComboBox.Text))
 			{
-				ProjectComboBox.SelectedItem = Properties.Settings.Default.LastProject;
+				POComboBox.SelectedItem = RecentSelections[ClientComboBox.Text].PO;
+				ProjectComboBox.SelectedItem = RecentSelections[ClientComboBox.Text].Project;
+			}
+			else
+			{
+				if (Properties.Settings.Default.LastPO.Length > 0)
+				{
+					POComboBox.SelectedItem = Properties.Settings.Default.LastPO;
+				}
+
+				if (Properties.Settings.Default.LastProject.Length > 0)
+				{
+					ProjectComboBox.SelectedItem = Properties.Settings.Default.LastProject;
+				}
 			}
 		}
 
