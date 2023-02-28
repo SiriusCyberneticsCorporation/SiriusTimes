@@ -18,7 +18,7 @@ namespace SiriusTimes
 		private const string RECENT_SELECTIONS = "RecentSelections.xml";
 
 		private LiteDatabase m_timesheetDatabase = null;
-		private LiteCollection<TimesheetRecord> m_timesheets = null;
+		private ILiteCollection<TimesheetRecord> m_timesheets = null;
 		private SerializableDictionary<string, TimesheetRecord>  RecentSelections = new SerializableDictionary<string, TimesheetRecord>();
 
 		public SiriusTimesForm()
